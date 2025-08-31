@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { Web3AuthProvider } from './contexts/Web3AuthContext';
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
 import ListingsPage from './pages/ListingsPage';
@@ -15,7 +15,7 @@ import './index.css';
 function App() {
   return (
     <Router>
-      <AuthProvider>
+      <Web3AuthProvider>
         <Layout>
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -34,7 +34,7 @@ function App() {
             />
           </Routes>
         </Layout>
-      </AuthProvider>
+      </Web3AuthProvider>
     </Router>
   );
 }
