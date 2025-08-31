@@ -1,10 +1,11 @@
 import React from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useWeb3Auth } from '../contexts/Web3AuthContext';
 import LandownerDashboard from '../components/LandownerDashboard';
 import SeekerDashboard from '../components/SeekerDashboard';
+import ContractTester from '../components/ContractTester';
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useWeb3Auth();
 
   if (!user) {
     return (
@@ -16,11 +17,19 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-very-dark-green">
-      {user.type === 'landowner' ? (
-        <LandownerDashboard user={user} />
-      ) : (
-        <SeekerDashboard user={user} />
-      )}
+      <div className="container mx-auto px-4 py-8">
+        {/* Contract Testing Section */}
+        <div className="mb-8">
+          <ContractTester />
+        </div>
+
+        {/* Original Dashboard Content */}
+        {user.type === 'landowner' ? (
+          <LandownerDashboard user={user} />
+        ) : (
+          <SeekerDashboard user={user} />
+        )}
+      </div>
     </div>
   );
 };

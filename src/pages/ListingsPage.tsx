@@ -1,19 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Filter, MapPin, Square, DollarSign } from 'lucide-react';
 import LandCard from '../components/LandCard';
-
-interface LandListing {
-  id: string;
-  title: string;
-  location: string;
-  size: number;
-  price: number;
-  priceUnit: 'acre' | 'hectare';
-  status: 'available' | 'pending' | 'leased';
-  image: string;
-  description: string;
-  features: string[];
-}
+import { useLandListings } from '../hooks/useLandListings';
+import { formatEther } from 'viem';
 
 const ListingsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,87 +11,30 @@ const ListingsPage: React.FC = () => {
   const [sizeRange, setSizeRange] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Mock data - replace with real API call
-  const mockListings: LandListing[] = [
-    {
-      id: '1',
-      title: 'Premium Agricultural Land',
-      location: 'Iowa, USA',
-      size: 150,
-      price: 300,
-      priceUnit: 'acre',
-      status: 'available',
-      image: 'https://images.pexels.com/photos/1595108/pexels-photo-1595108.jpeg?auto=compress&cs=tinysrgb&w=500',
-      description: 'Fertile farmland with excellent soil quality, perfect for corn and soybean cultivation.',
-      features: ['Irrigation System', 'Road Access', 'Fertile Soil', 'Equipment Barn']
-    },
-    {
-      id: '2',
-      title: 'Organic Farm Plot',
-      location: 'California, USA',
-      size: 75,
-      price: 500,
-      priceUnit: 'acre',
-      status: 'available',
-      image: 'https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=500',
-      description: 'Certified organic land with greenhouse facilities and water rights included.',
-      features: ['Organic Certified', 'Greenhouse', 'Water Rights', 'Solar Power']
-    },
-    {
-      id: '3',
-      title: 'Grazing Pasture Land',
-      location: 'Texas, USA',
-      size: 300,
-      price: 200,
-      priceUnit: 'acre',
-      status: 'pending',
-      image: 'https://images.pexels.com/photos/1595104/pexels-photo-1595104.jpeg?auto=compress&cs=tinysrgb&w=500',
-      description: 'Expansive pasture land ideal for cattle grazing with natural water sources.',
-      features: ['Natural Water', 'Fencing', 'Cattle Facilities', 'Hay Storage']
-    },
-    {
-      id: '4',
-      title: 'Vineyard Estate',
-      location: 'Napa Valley, CA',
-      size: 50,
-      price: 800,
-      priceUnit: 'acre',
-      status: 'available',
-      image: 'https://images.pexels.com/photos/207231/pexels-photo-207231.jpeg?auto=compress&cs=tinysrgb&w=500',
-      description: 'Established vineyard with mature vines and wine production facilities.',
-      features: ['Mature Vines', 'Wine Cellar', 'Tasting Room', 'Tourist Access']
-    },
-    {
-      id: '5',
-      title: 'Sustainable Farm Land',
-      location: 'Oregon, USA',
-      size: 120,
-      price: 350,
-      priceUnit: 'acre',
-      status: 'available',
-      image: 'https://images.pexels.com/photos/1595104/pexels-photo-1595104.jpeg?auto=compress&cs=tinysrgb&w=500',
-      description: 'Eco-friendly farmland with renewable energy systems and sustainable practices.',
-      features: ['Wind Power', 'Composting System', 'Native Plants', 'Wildlife Corridor']
-    },
-    {
-      id: '6',
-      title: 'Market Garden Plot',
-      location: 'Florida, USA',
-      size: 25,
-      price: 600,
-      priceUnit: 'acre',
-      status: 'available',
-      image: 'https://images.pexels.com/photos/2132251/pexels-photo-2132251.jpeg?auto=compress&cs=tinysrgb&w=500',
-      description: 'Small-scale intensive farming plot perfect for vegetables and herbs.',
-      features: ['Greenhouse', 'Drip Irrigation', 'Market Access', 'Storage Facility']
-    }
-  ];
+  const { availableListingIds, isLoading } = useLandListings();
+
+  // For now, we'll show the listing IDs until we implement full listing details fetching
+  // In a production app, you'd fetch the full details for each listing
+  const mockListings = availableListingIds?.map(id => ({
+    id: id.toString(),
+    owner: '0x0000000000000000000000000000000000000000',
+    title: `Land Listing #${id.toString()}`,
+    location: 'Base Sepolia Network',
+    size: 50,
+    price: BigInt('1000000000000000000'),
+    priceUnit: 'acre' as const,
+    status: 'available' as const,
+    description: 'This listing is loaded from the blockchain. Full details coming soon!',
+    features: ['Onchain Verified', 'Smart Contract Managed'],
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  })) || [];
 
   const filteredListings = mockListings.filter(listing => {
     const matchesSearch = listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          listing.location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLocation = !selectedLocation || listing.location.includes(selectedLocation);
-    
+
     return matchesSearch && matchesLocation;
   });
 
