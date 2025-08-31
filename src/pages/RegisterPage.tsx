@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { UserPlus, Eye, EyeOff, Leaf } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { UserPlus, Leaf } from 'lucide-react';
+import { useWeb3Auth } from '../contexts/Web3AuthContext';
 
 const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
     type: 'seeker' as 'landowner' | 'seeker'
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { register } = useAuth();
+  const { connect, setUserType, isConnected, user } = useWeb3Auth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isConnected && user) {
+      navigate('/dashboard');
+    }
+  }, [isConnected, user, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -32,27 +32,20 @@ const RegisterPage: React.FC = () => {
     setIsLoading(true);
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const success = await register(formData.name, formData.email, formData.password, formData.type);
-      if (success) {
-        navigate('/dashboard');
-      } else {
-        setError('Registration failed. Please try again.');
+      if (!isConnected) {
+        // First connect the wallet
+        await connect();
       }
+
+      // Set the user type after connection
+      if (formData.type) {
+        setUserType(formData.type);
+      }
+
+      navigate('/dashboard');
     } catch (err) {
-      setError('An error occurred during registration. Please try again.');
+      setError('Failed to connect wallet. Please try again.');
     }
 
     setIsLoading(false);
@@ -67,7 +60,7 @@ const RegisterPage: React.FC = () => {
             <Leaf className="w-12 h-12 text-olive-green" />
           </div>
           <h2 className="text-3xl font-bold text-white">Join LandLease</h2>
-          <p className="mt-2 text-gray-300">Create your account to get started</p>
+          <p className="mt-2 text-gray-300">Connect your wallet and choose your account type</p>
         </div>
 
         {/* Registration Form */}
@@ -79,36 +72,12 @@ const RegisterPage: React.FC = () => {
               </div>
             )}
 
-            <div>
-              <label htmlFor="name" className="block text-white text-sm font-medium mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-lg bg-very-dark-green text-white placeholder-gray-400 border border-gray-600 focus:border-olive-green focus:outline-none"
-                placeholder="Enter your full name"
-              />
-            </div>
 
-            <div>
-              <label htmlFor="email" className="block text-white text-sm font-medium mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-lg bg-very-dark-green text-white placeholder-gray-400 border border-gray-600 focus:border-olive-green focus:outline-none"
-                placeholder="Enter your email"
-              />
+
+            <div className="text-center mb-6">
+              <p className="text-gray-300 text-sm">
+                Connect your wallet to create your account. Your wallet address will be used as your unique identifier.
+              </p>
             </div>
 
             <div>
@@ -128,55 +97,7 @@ const RegisterPage: React.FC = () => {
               </select>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-white text-sm font-medium mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 pr-12 rounded-lg bg-very-dark-green text-white placeholder-gray-400 border border-gray-600 focus:border-olive-green focus:outline-none"
-                  placeholder="Create a password (min. 6 characters)"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-white text-sm font-medium mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 pr-12 rounded-lg bg-very-dark-green text-white placeholder-gray-400 border border-gray-600 focus:border-olive-green focus:outline-none"
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
 
             <div className="flex items-center">
               <input
@@ -208,7 +129,7 @@ const RegisterPage: React.FC = () => {
               ) : (
                 <UserPlus className="w-4 h-4 mr-2" />
               )}
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+{isLoading ? 'Connecting Wallet...' : 'Connect Wallet & Join'}
             </button>
           </form>
 
