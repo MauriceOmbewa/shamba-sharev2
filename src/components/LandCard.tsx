@@ -1,18 +1,7 @@
 import React from 'react';
 import { MapPin, Square, DollarSign, Eye } from 'lucide-react';
-
-interface LandListing {
-  id: string;
-  title: string;
-  location: string;
-  size: number;
-  price: number;
-  priceUnit: 'acre' | 'hectare';
-  status: 'available' | 'pending' | 'leased';
-  image: string;
-  description: string;
-  features: string[];
-}
+import { formatEther } from 'viem';
+import { LandListing } from '../contracts/LandListingContract';
 
 interface LandCardProps {
   listing: LandListing;
@@ -34,13 +23,11 @@ const LandCard: React.FC<LandCardProps> = ({ listing }) => {
 
   return (
     <div className="bg-dark-green rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow group">
-      {/* Image */}
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={listing.image}
-          alt={listing.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+      {/* Image Placeholder */}
+      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-olive-green to-army-green flex items-center justify-center">
+        <div className="text-white text-6xl opacity-20">
+          🌾
+        </div>
         <div className="absolute top-4 right-4">
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(listing.status)}`}>
             {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
@@ -68,7 +55,7 @@ const LandCard: React.FC<LandCardProps> = ({ listing }) => {
         <div className="flex items-center mb-4">
           <DollarSign className="w-5 h-5 text-olive-green mr-1" />
           <span className="text-2xl font-bold text-white">
-            ${listing.price}
+            {parseFloat(formatEther(listing.price)).toFixed(4)} ETH
           </span>
           <span className="text-gray-300 ml-1">/{listing.priceUnit}</span>
         </div>

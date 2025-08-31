@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Leaf } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useWeb3Auth } from '../contexts/Web3AuthContext';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, disconnect, connect, isConnected } = useWeb3Auth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    disconnect();
     navigate('/');
     setIsMenuOpen(false);
+  };
+
+  const handleConnect = async () => {
+    try {
+      await connect();
+    } catch (error) {
+      console.error('Failed to connect wallet:', error);
+    }
   };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -35,30 +43,27 @@ const Header: React.FC = () => {
             <Link to="/about" className="text-white hover:text-olive-green transition-colors">About</Link>
             <Link to="/contact" className="text-white hover:text-olive-green transition-colors">Contact</Link>
             
-            {user ? (
+            {isConnected && user ? (
               <div className="flex items-center space-x-4">
+                <span className="text-olive-green text-sm">
+                  {user.address?.slice(0, 6)}...{user.address?.slice(-4)}
+                </span>
                 <Link to="/dashboard" className="text-white hover:text-olive-green transition-colors">Dashboard</Link>
                 <button
                   onClick={handleLogout}
                   className="bg-olive-green text-white px-4 py-2 rounded-lg hover:bg-army-green transition-colors"
                 >
-                  Logout
+                  Disconnect
                 </button>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link
-                  to="/login"
-                  className="text-white hover:text-olive-green transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
+                <button
+                  onClick={handleConnect}
                   className="bg-olive-green text-white px-4 py-2 rounded-lg hover:bg-army-green transition-colors"
                 >
-                  Register
-                </Link>
+                  Connect Wallet
+                </button>
               </div>
             )}
           </nav>
@@ -81,33 +86,29 @@ const Header: React.FC = () => {
               <Link to="/about" className="text-white hover:text-olive-green transition-colors" onClick={closeMenu}>About</Link>
               <Link to="/contact" className="text-white hover:text-olive-green transition-colors" onClick={closeMenu}>Contact</Link>
               
-              {user ? (
+              {isConnected && user ? (
                 <>
+                  <span className="text-olive-green text-sm">
+                    {user.address?.slice(0, 6)}...{user.address?.slice(-4)}
+                  </span>
                   <Link to="/dashboard" className="text-white hover:text-olive-green transition-colors" onClick={closeMenu}>Dashboard</Link>
                   <button
                     onClick={handleLogout}
                     className="bg-olive-green text-white px-4 py-2 rounded-lg hover:bg-army-green transition-colors text-left"
                   >
-                    Logout
+                    Disconnect
                   </button>
                 </>
               ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="text-white hover:text-olive-green transition-colors"
-                    onClick={closeMenu}
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="bg-olive-green text-white px-4 py-2 rounded-lg hover:bg-army-green transition-colors inline-block text-center"
-                    onClick={closeMenu}
-                  >
-                    Register
-                  </Link>
-                </>
+                <button
+                  onClick={() => {
+                    handleConnect();
+                    closeMenu();
+                  }}
+                  className="bg-olive-green text-white px-4 py-2 rounded-lg hover:bg-army-green transition-colors text-left"
+                >
+                  Connect Wallet
+                </button>
               )}
             </div>
           </nav>
